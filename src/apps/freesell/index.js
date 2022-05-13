@@ -55,10 +55,23 @@ freesellApp.get("/freesell/api/checkauth", (req, res) => {
 freesellApp.post("/freesell/api/sendrecoverycode", (req, res) => {
   const email = req.body.email
   
-  freesellDB.users.findOne({email: email}, (err, user) => {
+  freesellDB.users.findOne({email: email}, async (err, user) => {
     if(user !== null) {
       const link = config.server + `/recoverypassword.html?u=${user._id}&c=${user.recoveryCode}`
-      console.log(link)
+      
+      try {
+        let info = await transporter.sendMail({
+          from: '"Freesell 👻"', // sender address
+          to: email, // list of receivers
+          subject: "Link de recuperação da conta no free$sell!", // Subject line
+          text: "Link: " + link, // plain text body
+          // html: "<b>Hello world?</b>", // html body
+        });
+        console.log("Message sent: %s", info.messageId);
+      } catch (error) {
+        console.error(error)
+      }
+    
       res.json({y: ""})
     } else {
       res.json({err: ""})
@@ -204,7 +217,9 @@ freesellApp.post("/freesell/api/user", (req, res) => {
 
 freesellApp.post("/freesell/api/productsuser", (req, res) => {
   freesellDB.products.find({user: req.body.user, removed: false}, async (err, products) => {
-    const ps = products
+    const ps = products.sort((a, b) => {
+      return parseInt(b.date - a.date)
+    })
 
     for (let i = 0; i < ps.length; i++) {
         
@@ -224,7 +239,9 @@ freesellApp.post("/freesell/api/productsuser", (req, res) => {
 
 freesellApp.post("/freesell/api/products/seller", (req, res) => {
   freesellDB.products.find({user: req.body.seller, removed: false}, async (err, products) => {
-    const ps = products
+    const ps = products.sort((a, b) => {
+      return parseInt(b.date - a.date)
+    })
 
     for (let i = 0; i < ps.length; i++) {
         
