@@ -8,7 +8,7 @@ const transporter = nodemailer.createTransport({
   auth: {
     user:  "brokenrock.mailer@gmail.com",
     pass: "brokenrock47",
-  },
-});
+  }
+})
 
 export default transporter
