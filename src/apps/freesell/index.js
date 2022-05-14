@@ -259,6 +259,12 @@ freesellApp.post("/freesell/api/products/seller", (req, res) => {
   })
 })
 
+freesellApp.get("/freesell/api/user/:text", (req, res) => {
+  freesellDB.users.findOne({companyName: req.params.text}, (err, doc) => {
+    const {_id, companyName} = doc
+    res.json({_id, companyName})
+  })
+})
 
 freesellApp.get("/freesell/api/logout", (req, res) => {
   res.clearCookie("user")
