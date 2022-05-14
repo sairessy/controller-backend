@@ -128,10 +128,11 @@ freesellApp.post("/freesell/api/products", (req, res) => {
   const {limit, category} = req.body
 
   if(category == "") {
-    freesellDB.products.find({removed: false}).limit(limit).exec( async (err, products) => {
-      const ps = products.sort((a, b) => {
-        return parseInt(b.date - a.date)
-      })
+    freesellDB.products.find({removed: false}).limit(limit).sort({date: -1}).exec( async (err, products) => {
+      const ps = products
+      // .sort((a, b) => {
+      //   return parseInt(b.date - a.date)
+      // })
       
       for (let i = 0; i < ps.length; i++) {
         
@@ -153,11 +154,12 @@ freesellApp.post("/freesell/api/products", (req, res) => {
       }) 
     })
   } else {
-    freesellDB.products.find({removed: false, category: category}).limit(limit).exec((err, products) => {
+    freesellDB.products.find({removed: false, category: category}).limit(limit).sort({date: -1}).exec((err, products) => {
       freesellDB.products.count({removed: false, category: category}, async (err, num) => {
-        const ps = products.sort((a, b) => {
-          return parseInt(b.date - a.date)
-        })
+        const ps = products
+        // .sort((a, b) => {
+        //   return parseInt(b.date - a.date)
+        // })
         
         for (let i = 0; i < ps.length; i++) {
           const userInfo = await new Promise((resolve, reject) => {
@@ -216,10 +218,11 @@ freesellApp.post("/freesell/api/user", (req, res) => {
 })
 
 freesellApp.post("/freesell/api/productsuser", (req, res) => {
-  freesellDB.products.find({user: req.body.user, removed: false}, async (err, products) => {
-    const ps = products.sort((a, b) => {
-      return parseInt(b.date - a.date)
-    })
+  freesellDB.products.find({user: req.body.user, removed: false}).sort({date: -1}).exec(async (err, products) => {
+    const ps = products
+    // .sort((a, b) => {
+    //   return parseInt(b.date - a.date)
+    // })
 
     for (let i = 0; i < ps.length; i++) {
         
