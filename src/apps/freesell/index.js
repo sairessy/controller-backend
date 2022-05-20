@@ -10,24 +10,26 @@ const storage = getStorage()
 
 const freesellDB = {
   users: new Datastore("./src/database/freesell/users.db"),
-  products: new Datastore("./src/database/freesell/products.db")
+  products: new Datastore("./src/database/freesell/products.db"),
+  feedbacks: new Datastore("./src/database/freesell/feedbacks.db")
 }
 
 freesellDB.users.loadDatabase()
 freesellDB.products.loadDatabase()
+freesellDB.feedbacks.loadDatabase()
 
 // freesellDB.products.update({}, {$set: {removed: false, description: ""}}, {multi: true}, (err, nreplaced) => {
 //   console.log(nreplaced)
 // })
 
-// freesellDB.users.update({}, {$set: {contact: "", companyName: "" }}, {multi: true}, (err, nreplaced) => {
+// freesellDB.users.update({}, {$set: {location: ""}}, {multi: true}, (err, nreplaced) => {
 //   console.log(nreplaced)
 // })
 
 freesellApp.post("/freesell/api/signup", (req, res) => {
   const data = req.body
 
-  freesellDB.users.findOne({email: data.email}, (err, user) => {
+  freesellDB.users.findOne({email: data.email, location: "1", companyName: "", companyType: "0"}, (err, user) => {
     if(user != null) {
       res.json({err: "O email já foi usado!"})
     } else {
@@ -36,6 +38,16 @@ freesellApp.post("/freesell/api/signup", (req, res) => {
         res.json(doc)
       })
     }  
+  })
+})
+
+freesellApp.post("/freesell/api/feedback", (req, res) => {
+  freesellDB.feedbacks.insert({
+    feedback: req.body.feedback,
+    email: req.body.email,
+    date: Date.now().toString()
+  }, (err, doc) => {
+    res.json(doc)
   })
 })
 
@@ -189,10 +201,12 @@ freesellApp.get("/freesell/api/removeproduct/:id", (req, res) => {
 })
 
 freesellApp.post("/freesell/api/updateuserprofile", (req, res) => {
-  const {email, companyName, contact, user} = req.body
-  freesellDB.users.update({_id: user}, {$set: {email, companyName, contact}}, {multi: true}, (err, nreplaced) => {
+  const {email, companyName, contact, user, companyType, location} = req.body
+
+  freesellDB.users.update({_id: user}, {$set: {email, companyName, contact, companyType, location}}, {multi: true}, (err, nreplaced) => {
     res.json({success: nreplaced > 0})
   })
+  
 })
 
 freesellApp.get("/freesell/api/users", (req, res) => {
@@ -202,8 +216,8 @@ freesellApp.get("/freesell/api/users", (req, res) => {
     for (let i = 0; i < docs.length; i++) {
       const user = docs[i]
       if(user.companyName != undefined) {
-        const {_id, companyName} = user
-        users.push({_id, companyName})
+        const {_id, companyName, companyType, location} = user
+        users.push({_id, companyName, companyType, location})
       }
     }
 
@@ -264,8 +278,12 @@ freesellApp.post("/freesell/api/products/seller", (req, res) => {
 
 freesellApp.get("/freesell/api/user/:text", (req, res) => {
   freesellDB.users.findOne({companyName: req.params.text}, (err, doc) => {
-    const {_id, companyName} = doc
-    res.json({_id, companyName})
+    if(doc != null) {
+      const {_id, companyName} = doc
+      res.json({_id, companyName})
+    } else {
+      res.json({})
+    }
   })
 })
 
